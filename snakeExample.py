@@ -1,5 +1,7 @@
 import pygame
 import random
+import threading
+from model import Sonido
 
 # Colores con los que vamos a trabajar
 BLACK = (0, 0, 0)
@@ -16,7 +18,7 @@ SCREEN_HEIGHT = 480
 CELL_SIZE = 20
 
 # Velocidad de la serpiente
-SNAKE_SPEED = 20
+SNAKE_SPEED = 5
 
 # Crear ventana de juego
 screen = pygame.display.set_mode( [SCREEN_WIDTH, SCREEN_HEIGHT] )
@@ -76,17 +78,19 @@ def draw_text(text, font, surface, x, y): # Creamos este para poder dibujar text
     text_rect.center = (x, y)
     surface.blit(text_object, text_rect)
 
+
+sonido = Sonido()
 snake = Snake()
 apple = Apple()
 
 game_over = False
 run = True
 score = 0
+i=0
 
 # Crear el bucle
 while run == True:
-    # Contro
-    # lar eventos del juego
+    # Controlar eventos del juego
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -136,5 +140,6 @@ while run == True:
     # Actualizar pantalla 
     pygame.display.update()
     clock.tick(10) # velocidad de los fps
+    sonido.grabarAudio(r"Records\Temp\a.wav", 1)
 
 pygame.quit()

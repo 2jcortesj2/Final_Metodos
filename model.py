@@ -10,12 +10,12 @@ class Sonido:
         self.myobj = self.eng.Sound()
 
 
-    def grabarAudio(self, path):
-        '''
+    def grabarAudio(self, path, fs):
+        r'''
         El path debe de contener el nombre del archivo.
         ej. \ubicacion\nombre.waw
         '''
-        self.eng.recordAudio(self.myobj, path)
+        self.eng.recordAudio(self.myobj, path, fs)
 
 
     def syncYPromeGrabaciones(self, folderPath, outputFilePath):
@@ -28,13 +28,21 @@ class Sonido:
     
 
     def compararFFT(self, path_wav, path_record):
-        '''
+        r'''
         Va a retornar el resultado numérico de la distancia euclidiana entre las dos funciones
         de fft.
         Es necesario poner el nombre del archivo en la dirección
         ej. \ubicacion\nombre.waw
         '''
-        return self.eng.compareFFT(self.myobj, path_wav, path_record)
+        diferencia = self.eng.compareFFT(self.myobj, path_wav, path_record)
+
+        if 6750 < diferencia < 7150:
+            return True
+        else:
+            return False
+    
+    def grabarYCompararSonido(self):
+        pass
 
 
 class interfaz_metodo:
