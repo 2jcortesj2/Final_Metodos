@@ -6,12 +6,12 @@ classdef Sound < handle
     end
     
     methods (Access = public)
-        function audio_data = recordAudio(obj, folderPath)
+        function audio_data = recordAudio(obj, folderPath, fs)
             
             recObj = audiorecorder(obj.FRECUENCIA_MUESTREO, 16, 1);
             
             % Grabar audio durante la duración especificada
-            recordblocking(recObj, obj.DURACION_GRABACION);
+            recordblocking(recObj, fs);
             
             % Obtener los datos grabados
             audio_data = getaudiodata(recObj);
