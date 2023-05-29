@@ -63,7 +63,7 @@ classdef Sound < handle
             % Obtener todas las grabaciones de una carpeta
             recordings = obj.readWavFilesFromFolder(folderPath);
 
-            % Obtener la duración de las grabaciones
+            % Obtener la duración máxima entre todas las grabaciones
             maxDuration = obj.DURACION_GRABACION;
         
             % Sincronizar las grabaciones y obtener segmentos de interés
@@ -73,7 +73,7 @@ classdef Sound < handle
             threshold = 0.5;
                 for i = 1:numel(recordings)
                     recording = recordings{i};
-                    
+            
                     % Encontrar el índice donde termina el silencio
                     endIdx = find(abs(recording) > threshold, 1, 'last');
             

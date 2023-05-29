@@ -53,7 +53,7 @@ def main_screen():
     screen.blit(image, (144, 45))
 
 # Función para dibujar el contenido de la pantalla alternativa
-def draw_alternate_screen():
+def record_screen():
     screen.fill(WHITE)
     
     # Dibujar los botones
@@ -83,7 +83,7 @@ while running:
     pygame.display.update()
 
 while running2:
-    draw_alternate_screen()
+    record_screen()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running2 = False
