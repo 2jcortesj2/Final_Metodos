@@ -2,11 +2,11 @@ classdef Sound < handle
     properties (Constant)
 
         FRECUENCIA_MUESTREO = 44100;
-        DURACION_GRABACION = 3;
+
     end
     
     methods (Access = public)
-        function audio_data = recordAudio(obj, folderPath, fs)
+        function audio_data = recordAudio(obj, folderPath, fs, write)
             
             recObj = audiorecorder(obj.FRECUENCIA_MUESTREO, 16, 1);
             
@@ -16,8 +16,10 @@ classdef Sound < handle
             % Obtener los datos grabados
             audio_data = getaudiodata(recObj);
             
-            % Guardar los datos grabados en un archivo
-            audiowrite(folderPath, audio_data, obj.FRECUENCIA_MUESTREO);         
+            if write
+                % Guardar los datos grabados en un archivo
+                audiowrite(folderPath, audio_data, obj.FRECUENCIA_MUESTREO);  
+            end
         end
         
 
@@ -32,7 +34,7 @@ classdef Sound < handle
             % Leer cada archivo WAV y almacenar las grabaciones de voz en la celda
             for i = 1:numel(wavFiles)
                 filePath = fullfile(folderPath, wavFiles(i).name);
-                [recording, sampleRate] = audioread(filePath);
+                [recording, ~] = audioread(filePath);
                 recordings{i} = recording;
             end
         end
@@ -64,7 +66,7 @@ classdef Sound < handle
             recordings = obj.readWavFilesFromFolder(folderPath);
 
             % Obtener la duración de las grabaciones
-            maxDuration = obj.DURACION_GRABACION;
+            maxDuration = max(cellfun(@length, recordings));
         
             % Sincronizar las grabaciones y obtener segmentos de interés
             segments = cell(size(recordings));
@@ -93,24 +95,65 @@ classdef Sound < handle
             % Guardar el archivo resultante como .wav
             obj.saveAsWav(averagedFeatures, outputFilePath);
         end
-        
 
-        function distance = compareFFT(obj, path_wav, path_record)
+
+        function trimmedRecording = trimRecording(obj, recording)
+            % Umbral para detectar el fin del silencio
+            threshold = 0.5;
+            
+            % Encontrar el índice donde termina el silencio
+            endIdx = find(abs(recording) > threshold, 1, 'last');
+            
+            % Extraer el segmento de interés a partir del final del silencio
+            trimmedRecording = recording(endIdx+1:end);
+        end
+
+        function DEE = procesing_audio(obj, audio_wav)
+
+            % Se normaliza la amplitud (volumen) de la señal en el tiempo.
+            audio_wav = audio_wav/max(abs(audio_wav)); 
+            
+            % Total de muestras.
+            N = length(audio_wav);
+            
+            % Optimización del algoritmo FFT a través de un vector de 
+            % muestras que sea una potencia de 2.
+            NFFT = 2^nextpow2(N); 
+
+            % Se calcula la transformada de Fourier.
+            Y = fft(audio_wav, NFFT); 
+
+            % Como se va a trabajar con señales reales, se recorta el 
+            % espectro y se trabaja con el espectro unilateral.
+            Y = Y(1:NFFT/2);
+            
+            % Se calcula el módulo de la transformada.
+            Yabs = abs(Y);
+
+            % Densidad espectral de energía de la muestra.
+            DEE = Yabs.^2;
+        end
+
+
+        function error = compareDEE(obj, path_wav, fs)
+
+            % Realizamos la grabacion del audio
+            record_data = obj.recordAudio('C:\Users\Usuario\Desktop\JUAN\FINAL_METODOS\Records\Avareged\a.wav', fs, false);
+
             % Leer el archivo WAV original
-            [audio_wav, fs_wav] = audioread(path_wav);
-        
-            % Leer la grabación de audio desde el archivo WAV de la grabación
-            [audio_record, fs_record] = audioread(path_record);
-        
+            [audio_wav, ~] = audioread(path_wav);
+
+            % Aseguramos que ambas señales tengan la misma longitud
+            sound_data = obj.alignDuration(record_data, length(audio_wav));
+
             % Realizar la Transformada Rápida de Fourier (FFT)
-            fft_audio_wav = fft(audio_wav);
-            fft_audio_record = fft(audio_record);
-        
-            % Calcular la distancia Euclidiana entre los vectores de características
-            distance = norm(fft_audio_wav - fft_audio_record);
-        
-            % Mostrar el resultado de la comparación
-            fprintf('La distancia Euclidiana entre los espectros de frecuencia es: %f\n', distance);
+            DEE_record_data = obj.procesing_audio(sound_data);
+            DEE_audio_wav = obj.procesing_audio(audio_wav);
+
+            error = mean( ...
+                abs(DEE_audio_wav(1:length(DEE_audio_wav)/2) - ...
+                DEE_record_data(1:length(DEE_audio_wav)/2)) ...
+                );
         end
     end
 end
