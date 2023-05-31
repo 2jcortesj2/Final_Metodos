@@ -153,7 +153,7 @@ while run == True:
 
     # Actualizar pantalla 
     pygame.display.update()
-    clock.tick(5) # velocidad de los fps
+    clock.tick(2) # velocidad de los fps
 
 sound_recorder.stop_recording()
 # Quit Pygame

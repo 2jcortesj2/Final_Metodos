@@ -138,7 +138,7 @@ classdef Sound < handle
         function error = compareDEE(obj, path_wav, fs)
 
             % Realizamos la grabacion del audio
-            record_data = obj.recordAudio('C:\Users\Usuario\Desktop\JUAN\FINAL_METODOS\Records\Avareged\a.wav', fs, false);
+            record_data = obj.recordAudio('', fs, false);
 
             % Leer el archivo WAV original
             [audio_wav, ~] = audioread(path_wav);
@@ -155,5 +155,31 @@ classdef Sound < handle
                 DEE_record_data(1:length(DEE_audio_wav)/2)) ...
                 );
         end
+
+
+
+        function error = compareMFCC(obj, path_wav, t)
+            % Grabar audio
+            disp('Grabando voz...')
+            record_data = obj.recordAudio('', t, false);
+        
+            % Leer el archivo WAV original
+            [audio_wav, ~] = audioread(path_wav);
+            audio_wav = audio_wav/max(abs(audio_wav)); 
+        
+            % Asegurarse de que ambas señales tengan la misma longitud
+            sound_data = obj.alignDuration(record_data, length(audio_wav));
+            sound_data = sound_data/max(abs(sound_data)); 
+
+            % Calcular MFCC de la muestra grabada
+            mfcc_record_data = mfcc(sound_data, obj.FRECUENCIA_MUESTREO);
+        
+            % Calcular MFCC de la muestra guardada
+            mfcc_audio_wav = mfcc(audio_wav, obj.FRECUENCIA_MUESTREO);
+        
+            % Calcular la distancia entre los MFCCs
+            error = dtw(mfcc_record_data, mfcc_audio_wav);
+        end
+
     end
 end
